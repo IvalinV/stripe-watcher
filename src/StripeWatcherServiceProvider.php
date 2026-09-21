@@ -6,6 +6,7 @@ namespace StripeWatcher\StripeWatcher;
 
 use Illuminate\Support\ServiceProvider;
 use StripeWatcher\StripeWatcher\Console\Commands\StripeWatcherCommand;
+use StripeWatcher\StripeWatcher\Support\WebhookRedactor;
 
 class StripeWatcherServiceProvider extends ServiceProvider
 {
@@ -14,9 +15,29 @@ class StripeWatcherServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/stripe-watcher.php', 'stripe-watcher');
+        $configPath = __DIR__.'/../config/stripe-watcher.php';
+
+        $this->mergeConfigFrom($configPath, 'stripe-watcher');
+
+        /** @var array<string, mixed> $defaults */
+        $defaults = require $configPath;
+        /** @var array<string, mixed> $configured */
+        $configured = (array) config('stripe-watcher', []);
+        $configuration = array_replace_recursive($defaults, $configured);
+
+        $configuration['redaction']['keys'] = array_values(array_unique([
+            ...$defaults['redaction']['keys'],
+            ...((array) ($configured['redaction']['keys'] ?? [])),
+        ]));
+        $configuration['redaction']['headers'] = array_values(array_unique([
+            ...$defaults['redaction']['headers'],
+            ...((array) ($configured['redaction']['headers'] ?? [])),
+        ]));
+
+        config(['stripe-watcher' => $configuration]);
 
         $this->app->singleton(StripeWatcher::class);
+        $this->app->singleton(WebhookRedactor::class);
     }
 
     /**
@@ -24,11 +45,13 @@ class StripeWatcherServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__.'/../routes/stripe-watcher.php');
-
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'stripe-watcher');
 
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'stripe-watcher');
+
+        if (config('stripe-watcher.enabled')) {
+            $this->loadRoutesFrom(__DIR__.'/../routes/stripe-watcher.php');
+        }
 
         if (! $this->app->runningInConsole()) {
             return;

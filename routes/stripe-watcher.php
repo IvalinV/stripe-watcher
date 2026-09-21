@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
-// use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Route;
 
-// Route::get('stripe-watcher', fn () => 'StripeWatcher placeholder route.')->name('stripe-watcher.placeholder');
+Route::middleware([
+    ...config('stripe-watcher.middleware'),
+    'can:'.config('stripe-watcher.authorization_ability'),
+])
+    ->prefix(config('stripe-watcher.route_prefix'))
+    ->name('stripe-watcher.')
+    ->group(function (): void {
+        Route::get('/', fn (): string => 'Stripe Watcher dashboard.')->name('dashboard');
+    });

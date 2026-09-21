@@ -61,7 +61,36 @@ php artisan vendor:publish --tag="stripe-watcher-assets"
 
 ## Usage
 
-<!-- Add a basic usage example here. -->
+The dashboard is disabled by default. Enable it explicitly in the published
+configuration file:
+
+```php
+'enabled' => true,
+```
+
+The dashboard route is protected with Laravel authorization. The dashboard UI
+is still being implemented. Define the configured ability in the application,
+for example:
+
+```php
+use Illuminate\Support\Facades\Gate;
+
+Gate::define('viewStripeWatcher', function (User $user): bool {
+    return $user->is_admin;
+});
+```
+
+The dashboard uses the `web`, `auth`, and `can:viewStripeWatcher` middleware by
+default. These middleware, the route prefix, and the ability name can be
+changed in `config/stripe-watcher.php`.
+
+The package provides a `stripe_watcher_webhooks` table and model for the
+upcoming webhook capture flow. Publish and run the package migration when you
+are ready to enable storage. Request and response headers and JSON payloads
+are redacted at the model boundary before storage. Redaction can be configured
+through the `storage` and `redaction` sections of `config/stripe-watcher.php`.
+Redaction fails closed: disabling it omits bodies, headers, and payloads rather
+than storing them unredacted. Invalid or non-JSON bodies are also omitted.
 
 ## Changelog
 
