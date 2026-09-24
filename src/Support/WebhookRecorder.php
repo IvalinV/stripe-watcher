@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StripeWatcher\StripeWatcher\Support;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use JsonException;
 use StripeWatcher\StripeWatcher\Models\StripeWebhook;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +17,20 @@ class WebhookRecorder
     {
         $body = $request->getContent();
         $payload = $this->payload($body);
+        $signatureVerified = $this->signatureStatus($request);
+
+        if ($signatureVerified === null) {
+            try {
+                Log::warning('Stripe Watcher captured a webhook without a signature verification result.', [
+                    'signature_attribute' => (string) config(
+                        'stripe-watcher.capture.signature_attribute',
+                        'stripe_signature_verified',
+                    ),
+                ]);
+            } catch (Throwable) {
+                // Logging must not prevent the webhook from being recorded.
+            }
+        }
 
         return StripeWebhook::create([
             'event_id' => $this->stringValue($payload['id'] ?? null),
@@ -31,7 +46,7 @@ class WebhookRecorder
             'request_headers' => $request->headers->all(),
             'request_body' => $body,
             'request_payload' => $payload,
-            'signature_verified' => $this->signatureStatus($request),
+            'signature_verified' => $signatureVerified,
             'started_at' => now(),
         ]);
     }

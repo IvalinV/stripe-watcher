@@ -20,6 +20,12 @@ You can install the package via Composer:
 composer require ivalin-venkov/stripe-watcher
 ```
 
+Stripe Watcher is designed to work alongside Stripe's PHP SDK. The package
+does not verify webhook signatures itself; verify the request in your existing
+webhook integration before the capture middleware runs. Composer will suggest
+`stripe/stripe-php`, but it is not a required dependency because verification
+may also be handled by Laravel Cashier or custom application code.
+
 You may publish all of the package's resources at once:
 
 ```bash
@@ -107,7 +113,10 @@ Request URLs are omitted to avoid persisting secrets embedded in URL paths. If
 signature verification runs before the capture middleware, set the result
 on the request using `capture.signature_attribute` (default:
 `stripe_signature_verified`). Captured records include request metadata,
-response data, exceptions, and processing duration.
+response data, exceptions, and processing duration. If the capture middleware
+does not find a boolean verification result, including when the attribute is
+missing or contains a non-boolean value, it records the webhook and writes
+a warning to the application log so the integration can be checked.
 
 Exception messages and traces are omitted when redaction is disabled. Known
 configured sensitive values and common Stripe secret formats are omitted when

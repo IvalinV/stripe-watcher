@@ -1,11 +1,13 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "ivalin-venkov/stripe-watcher",
-    "description": "Package allowing you to inspect the stripe webhooks payload and result",
+    "description": "Laravel package for inspecting Stripe webhook payloads and responses",
     "keywords": [
         "laravel",
         "ivalin-venkov",
-        "stripe-watcher"
+        "stripe-watcher",
+        "stripe",
+        "stripe-webhooks"
     ],
     "homepage": "https://github.com/ivalin-venkov/stripe-watcher",
     "license": "MIT",
@@ -29,6 +31,9 @@
         "pestphp/pest-plugin-laravel": "^4.1",
         "pestphp/pest-plugin-type-coverage": "^4.0",
         "phpstan/extension-installer": "^1.4"
+    },
+    "suggest": {
+        "stripe/stripe-php": "Recommended when your application verifies webhook signatures with the Stripe PHP SDK."
     },
     "autoload": {
         "psr-4": {

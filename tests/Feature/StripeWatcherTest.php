@@ -25,6 +25,19 @@ it('resolves the webhook recorder as a singleton', function () {
         ->and(app(WebhookRecorder::class))->toBe(app(WebhookRecorder::class));
 });
 
+it('describes the Stripe SDK integration in Composer metadata', function () {
+    $composer = json_decode(
+        file_get_contents(dirname(__DIR__, 2).'/composer.json'),
+        true,
+        512,
+        JSON_THROW_ON_ERROR,
+    );
+
+    expect($composer['description'])->toContain('Stripe webhook')
+        ->and($composer['require']['stripe/stripe-php'] ?? null)->toBeNull()
+        ->and($composer['suggest']['stripe/stripe-php'])->toContain('webhook');
+});
+
 it('publishes the webhook migration', function () {
     expect(ServiceProvider::pathsToPublish(null, 'stripe-watcher-migrations'))
         ->toHaveKey(dirname(__DIR__, 2).'/src/../database/migrations');

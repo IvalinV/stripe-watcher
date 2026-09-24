@@ -42,6 +42,13 @@ Use this skill when a Laravel application needs to integrate the Stripe Watcher 
        ->middleware(CaptureWebhook::class);
    ```
 
+   Verify the webhook with Stripe's PHP SDK, Laravel Cashier, or application
+   code before this middleware runs, and set the configured
+   `capture.signature_attribute` request attribute to a boolean result. The
+   package suggests `stripe/stripe-php` but does not require it. If no boolean
+   result is present, including when the attribute is missing or non-boolean,
+   it logs a warning and continues capturing the webhook.
+
 3. Enable and protect the dashboard in `config/stripe-watcher.php`. Define the
    configured `authorization_ability` in the application. The dashboard is
    disabled by default.

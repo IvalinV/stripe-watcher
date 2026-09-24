@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use StripeWatcher\StripeWatcher\Http\Middleware\CaptureWebhook;
 use StripeWatcher\StripeWatcher\Models\StripeWebhook;
@@ -77,6 +78,86 @@ it('captures requests through an application route middleware attachment', funct
         ->assertSuccessful();
 
     expect($this->app['db']->table('stripe_watcher_webhooks')->first()->event_id)->toBe('evt_route');
+});
+
+it('warns when a webhook has no signature verification result', function () {
+    Log::spy();
+
+    $response = app(CaptureWebhook::class)->handle(
+        Request::create('/stripe/webhook', 'POST', [], [], [], [], '{}'),
+        fn (Request $request): Response => response()->json(['ok' => true]),
+    );
+
+    expect($response->getStatusCode())->toBe(200);
+    expect($this->app['db']->table('stripe_watcher_webhooks')->first()->signature_verified)->toBeNull();
+
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(fn (string $message, array $context): bool => $message === 'Stripe Watcher captured a webhook without a signature verification result.'
+            && $context['signature_attribute'] === 'stripe_signature_verified',
+        );
+});
+
+it('warns when the signature verification result is not boolean', function () {
+    Log::spy();
+
+    $request = Request::create('/stripe/webhook', 'POST', [], [], [], [], '{}');
+    $request->attributes->set('stripe_signature_verified', 'true');
+
+    $response = app(CaptureWebhook::class)->handle(
+        $request,
+        fn (Request $request): Response => response()->json(['ok' => true]),
+    );
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and($this->app['db']->table('stripe_watcher_webhooks')->first()->signature_verified)->toBeNull();
+
+    Log::shouldHaveReceived('warning')->once();
+});
+
+it('does not warn when signature verification explicitly fails', function () {
+    Log::spy();
+
+    $request = Request::create('/stripe/webhook', 'POST', [], [], [], [], '{}');
+    $request->attributes->set('stripe_signature_verified', false);
+
+    app(CaptureWebhook::class)->handle(
+        $request,
+        fn (Request $request): Response => response()->json(['ok' => true]),
+    );
+
+    expect($this->app['db']->table('stripe_watcher_webhooks')->first()->signature_verified)->toBe(0);
+
+    Log::shouldNotHaveReceived('warning');
+});
+
+it('uses a custom signature verification attribute', function () {
+    config(['stripe-watcher.capture.signature_attribute' => 'webhook_verified']);
+    Log::spy();
+
+    $response = app(CaptureWebhook::class)->handle(
+        Request::create('/stripe/webhook', 'POST', [], [], [], [], '{}'),
+        fn (Request $request): Response => response()->json(['ok' => true]),
+    );
+
+    expect($response->getStatusCode())->toBe(200);
+
+    Log::shouldHaveReceived('warning')
+        ->once()
+        ->withArgs(fn (string $message, array $context): bool => $context['signature_attribute'] === 'webhook_verified',
+        );
+});
+
+it('continues recording when warning logging fails', function () {
+    Log::shouldReceive('warning')->once()->andThrow(new RuntimeException('Logger unavailable'));
+
+    $response = app(CaptureWebhook::class)->handle(
+        Request::create('/stripe/webhook', 'POST', [], [], [], [], '{}'),
+        fn (Request $request): Response => response()->json(['ok' => true]),
+    );
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and($this->app['db']->table('stripe_watcher_webhooks')->count())->toBe(1);
 });
 
 it('records handler exceptions and rethrows them', function () {
