@@ -15,8 +15,16 @@ return [
 
     'authorization_ability' => 'viewStripeWatcher',
 
+    'capture' => [
+        'signature_attribute' => 'stripe_signature_verified',
+    ],
+
     'storage' => [
         'table' => 'stripe_watcher_webhooks',
+    ],
+
+    'retention' => [
+        'days' => 30,
     ],
 
     'redaction' => [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\ServiceProvider;
 use StripeWatcher\StripeWatcher\StripeWatcher;
+use StripeWatcher\StripeWatcher\Support\WebhookRecorder;
 use StripeWatcher\StripeWatcher\Support\WebhookRedactor;
 
 it('resolves the singleton', function () {
@@ -17,6 +18,11 @@ it('returns the same instance from the container', function () {
 it('resolves the webhook redactor as a singleton', function () {
     expect(app(WebhookRedactor::class))->toBeInstanceOf(WebhookRedactor::class)
         ->and(app(WebhookRedactor::class))->toBe(app(WebhookRedactor::class));
+});
+
+it('resolves the webhook recorder as a singleton', function () {
+    expect(app(WebhookRecorder::class))->toBeInstanceOf(WebhookRecorder::class)
+        ->and(app(WebhookRecorder::class))->toBe(app(WebhookRecorder::class));
 });
 
 it('publishes the webhook migration', function () {

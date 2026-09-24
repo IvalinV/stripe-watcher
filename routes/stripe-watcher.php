@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use StripeWatcher\StripeWatcher\Http\Controllers\DashboardController;
 
 Route::middleware([
     ...config('stripe-watcher.middleware'),
@@ -11,5 +12,6 @@ Route::middleware([
     ->prefix(config('stripe-watcher.route_prefix'))
     ->name('stripe-watcher.')
     ->group(function (): void {
-        Route::get('/', fn (): string => 'Stripe Watcher dashboard.')->name('dashboard');
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/{webhook}', [DashboardController::class, 'show'])->name('webhook');
     });

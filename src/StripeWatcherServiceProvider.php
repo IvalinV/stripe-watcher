@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace StripeWatcher\StripeWatcher;
 
 use Illuminate\Support\ServiceProvider;
+use StripeWatcher\StripeWatcher\Console\Commands\PruneWebhooksCommand;
 use StripeWatcher\StripeWatcher\Console\Commands\StripeWatcherCommand;
+use StripeWatcher\StripeWatcher\Support\WebhookRecorder;
 use StripeWatcher\StripeWatcher\Support\WebhookRedactor;
 
 class StripeWatcherServiceProvider extends ServiceProvider
@@ -38,6 +40,7 @@ class StripeWatcherServiceProvider extends ServiceProvider
 
         $this->app->singleton(StripeWatcher::class);
         $this->app->singleton(WebhookRedactor::class);
+        $this->app->singleton(WebhookRecorder::class);
     }
 
     /**
@@ -79,6 +82,7 @@ class StripeWatcherServiceProvider extends ServiceProvider
 
         $this->commands([
             StripeWatcherCommand::class,
+            PruneWebhooksCommand::class,
         ]);
     }
 }
