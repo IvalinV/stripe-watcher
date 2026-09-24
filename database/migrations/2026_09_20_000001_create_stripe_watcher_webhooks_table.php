@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    private const string TABLE = 'stripe_watcher_webhooks';
+
     public function up(): void
     {
-        Schema::create(config('stripe-watcher.storage.table', 'stripe_watcher_webhooks'), function (Blueprint $table): void {
+        Schema::create(self::TABLE, function (Blueprint $table): void {
             $table->id();
             $table->string('event_id')->nullable()->index();
             $table->string('event_type')->nullable()->index();
@@ -42,6 +44,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(config('stripe-watcher.storage.table', 'stripe_watcher_webhooks'));
+        Schema::dropIfExists(self::TABLE);
     }
 };

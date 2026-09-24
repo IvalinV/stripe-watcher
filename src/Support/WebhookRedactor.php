@@ -61,6 +61,25 @@ class WebhookRedactor
         }
     }
 
+    public function message(?string $message): ?string
+    {
+        if ($message === null) {
+            return null;
+        }
+
+        $names = array_unique([
+            ...$this->configuredNames('keys'),
+            ...$this->configuredNames('headers'),
+        ]);
+
+        $pattern = '/(?:'.implode('|', array_map(
+            static fn (string $name): string => preg_quote($name, '/'),
+            $names,
+        )).')\s*["\']?\s*[:=]/i';
+
+        return preg_match($pattern, $message) === 1 ? null : $message;
+    }
+
     public function trace(?string $trace): ?string
     {
         if ($trace === null) {

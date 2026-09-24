@@ -124,3 +124,13 @@ it('removes trace arguments containing a colon and space', function () {
         ->toBe('#0 /app/file.php: Handler->run')
         ->not->toContain('secret');
 });
+
+it('omits exception messages containing sensitive values', function () {
+    expect(app(WebhookRedactor::class)->message('Invalid signature: token=secret-value'))
+        ->toBeNull();
+});
+
+it('preserves exception messages without sensitive values', function () {
+    expect(app(WebhookRedactor::class)->message('Invalid event type'))
+        ->toBe('Invalid event type');
+});

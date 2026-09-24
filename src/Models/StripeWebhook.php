@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StripeWatcher\StripeWatcher\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use JsonException;
 use StripeWatcher\StripeWatcher\Support\WebhookRedactor;
 
 class StripeWebhook extends Model
@@ -35,9 +36,9 @@ class StripeWebhook extends Model
      */
     public function setRequestHeadersAttribute(?array $value): void
     {
-        $this->attributes['request_headers'] = $this->redactionEnabled()
-            ? json_encode(app(WebhookRedactor::class)->headers($value ?? []))
-            : null;
+        $this->attributes['request_headers'] = $value === null || ! $this->redactionEnabled()
+            ? null
+            : $this->encode(app(WebhookRedactor::class)->headers($value));
     }
 
     /**
@@ -45,9 +46,9 @@ class StripeWebhook extends Model
      */
     public function setRequestPayloadAttribute(?array $value): void
     {
-        $this->attributes['request_payload'] = $this->redactionEnabled()
-            ? json_encode(app(WebhookRedactor::class)->payload($value ?? []))
-            : null;
+        $this->attributes['request_payload'] = $value === null || ! $this->redactionEnabled()
+            ? null
+            : $this->encode(app(WebhookRedactor::class)->payload($value));
     }
 
     /**
@@ -55,9 +56,9 @@ class StripeWebhook extends Model
      */
     public function setResponseHeadersAttribute(?array $value): void
     {
-        $this->attributes['response_headers'] = $this->redactionEnabled()
-            ? json_encode(app(WebhookRedactor::class)->headers($value ?? []))
-            : null;
+        $this->attributes['response_headers'] = $value === null || ! $this->redactionEnabled()
+            ? null
+            : $this->encode(app(WebhookRedactor::class)->headers($value));
     }
 
     public function setRequestBodyAttribute(?string $value): void
@@ -73,6 +74,23 @@ class StripeWebhook extends Model
     public function setExceptionTraceAttribute(?string $value): void
     {
         $this->attributes['exception_trace'] = app(WebhookRedactor::class)->trace($value);
+    }
+
+    public function setExceptionMessageAttribute(?string $value): void
+    {
+        $this->attributes['exception_message'] = app(WebhookRedactor::class)->message($value);
+    }
+
+    /**
+     * @param  array<string, mixed>  $value
+     */
+    private function encode(array $value): ?string
+    {
+        try {
+            return json_encode($value, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return null;
+        }
     }
 
     private function redactionEnabled(): bool

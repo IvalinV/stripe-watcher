@@ -67,6 +67,30 @@ it('omits invalid request bodies when mass assigned', function () {
     expect(StripeWebhook::create(['request_body' => 'not-json'])->request_body)->toBeNull();
 });
 
+it('preserves null JSON attributes when mass assigned', function () {
+    $webhook = StripeWebhook::create([
+        'request_headers' => null,
+        'request_payload' => null,
+        'response_headers' => null,
+    ]);
+
+    expect($webhook->request_headers)->toBeNull()
+        ->and($webhook->request_payload)->toBeNull()
+        ->and($webhook->response_headers)->toBeNull();
+});
+
+it('omits JSON attributes that cannot be encoded', function () {
+    $webhook = StripeWebhook::create([
+        'request_headers' => ["invalid\xB1" => 'value'],
+        'request_payload' => ['invalid' => "value\xB1"],
+        'response_headers' => ['invalid' => "value\xB1"],
+    ]);
+
+    expect($webhook->request_headers)->toBeNull()
+        ->and($webhook->request_payload)->toBeNull()
+        ->and($webhook->response_headers)->toBeNull();
+});
+
 it('does not persist bodies when redaction is disabled', function () {
     config(['stripe-watcher.redaction.enabled' => false]);
 
@@ -97,6 +121,14 @@ it('stores only a sanitized exception trace summary', function () {
         ->not->toContain('secret-value');
 });
 
+it('omits exception messages that contain sensitive values', function () {
+    $webhook = StripeWebhook::create([
+        'exception_message' => 'Invalid signature: token=secret-value',
+    ]);
+
+    expect($webhook->exception_message)->toBeNull();
+});
+
 it('uses the configured storage table with required columns', function () {
     expect((new StripeWebhook)->getTable())->toBe('stripe_watcher_webhooks')
         ->and(Schema::hasColumns('stripe_watcher_webhooks', [
@@ -120,4 +152,16 @@ it('uses the configured storage table with required columns', function () {
     expect((new StripeWebhook)->getTable())->toBe('custom_webhooks');
 
     config(['stripe-watcher.storage.table' => 'stripe_watcher_webhooks']);
+});
+
+it('uses the package table when rolling back after configuration changes', function () {
+    config(['stripe-watcher.storage.table' => 'custom_webhooks']);
+
+    $migration = require __DIR__.'/../../database/migrations/2026_09_20_000001_create_stripe_watcher_webhooks_table.php';
+
+    config(['stripe-watcher.storage.table' => 'another_webhooks']);
+    $migration->down();
+
+    expect(Schema::hasTable('stripe_watcher_webhooks'))->toBeFalse()
+        ->and(Schema::hasTable('custom_webhooks'))->toBeFalse();
 });
