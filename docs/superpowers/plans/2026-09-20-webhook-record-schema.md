@@ -31,10 +31,10 @@
 - Produces `WebhookRedactor::payload(array $payload): array`.
 - Produces `WebhookRedactor::body(?string $body): ?string`.
 
-- [ ] **Step 1: Write failing tests** for recursive key replacement, case-insensitive headers, configured keys/replacement, JSON body encoding, invalid-body omission, and disabled redaction.
-- [ ] **Step 2: Run `composer test:unit -- --filter=WebhookRedactorTest`** and verify the tests fail because the class/configuration does not exist.
-- [ ] **Step 3: Add config defaults and implement the redactor with recursive arrays and case-insensitive matching.** Default sensitive keys must include `authorization`, `cookie`, `set-cookie`, `stripe-signature`, `password`, `token`, `access_token`, `refresh_token`, `api_key`, `client_secret`, `signing_secret`, and `webhook_secret`.
-- [ ] **Step 4: Run the focused tests and verify they pass.**
+- [x] **Step 1: Write failing tests** for recursive key replacement, case-insensitive headers, configured keys/replacement, JSON body encoding, invalid-body omission, and disabled redaction.
+- [x] **Step 2: Run `composer test:unit -- --filter=WebhookRedactorTest`** and verify the tests fail because the class/configuration does not exist.
+- [x] **Step 3: Add config defaults and implement the redactor with recursive arrays and case-insensitive matching.** Default sensitive keys must include `authorization`, `cookie`, `set-cookie`, `stripe-signature`, `password`, `token`, `access_token`, `refresh_token`, `api_key`, `client_secret`, `signing_secret`, and `webhook_secret`.
+- [x] **Step 4: Run the focused tests and verify they pass.**
 
 ### Task 2: Webhook Migration and Model
 
@@ -50,11 +50,11 @@
 - Boolean attribute: `livemode`.
 - Datetime attributes: `started_at`, `completed_at`, `failed_at`.
 
-- [ ] **Step 1: Write failing migration/model tests** that migrate SQLite, create a record with all supported attributes, and assert persisted values and casts.
-- [ ] **Step 2: Run `composer test:unit -- --filter=WebhookRecordTest`** and verify failure from the missing table/model.
-- [ ] **Step 3: Add the migration with indexed event ID/type/status timestamps and the request, Stripe, response, timing, and exception columns defined by the spec.**
-- [ ] **Step 4: Add the model with guarded/fillable attributes, configured table name, and casts.**
-- [ ] **Step 5: Run the focused tests and verify they pass.**
+- [x] **Step 1: Write failing migration/model tests** that migrate SQLite, create a record with all supported attributes, and assert persisted values and casts.
+- [x] **Step 2: Run `composer test:unit -- --filter=WebhookRecordTest`** and verify failure from the missing table/model.
+- [x] **Step 3: Add the migration with indexed event ID/type/status timestamps and the request, Stripe, response, timing, and exception columns defined by the spec.**
+- [x] **Step 4: Add the model with guarded/fillable attributes, configured table name, and casts.**
+- [x] **Step 5: Run the focused tests and verify they pass.**
 
 ### Task 3: Provider Wiring and Documentation
 
@@ -63,8 +63,8 @@
 - Modify: `README.md`
 - Modify: `tests/Feature/StripeWatcherTest.php`
 
-- [ ] **Step 1: Add a failing assertion that the migration is published through the existing `stripe-watcher-migrations` tag and that the redactor resolves from the container.**
-- [ ] **Step 2: Run the focused provider tests and verify the new assertions fail.**
-- [ ] **Step 3: Bind `WebhookRedactor` as a singleton and retain the existing guarded migration publishing.**
-- [ ] **Step 4: Document the record table, redaction defaults, and configuration keys without promising capture behavior yet.**
-- [ ] **Step 5: Run `composer test`, `composer lint:check`, and `composer analyse`.**
+- [x] **Step 1: Add a failing assertion that the migration is published through the existing `stripe-watcher-migrations` tag and that the redactor resolves from the container.**
+- [x] **Step 2: Run the focused provider tests and verify the new assertions fail.**
+- [x] **Step 3: Bind `WebhookRedactor` as a singleton and retain the existing guarded migration publishing.**
+- [x] **Step 4: Document the record table, redaction defaults, and configuration keys without promising capture behavior yet.**
+- [x] **Step 5: Run `composer test`, `composer lint:check`, and `composer analyse`.**

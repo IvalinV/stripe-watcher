@@ -111,6 +111,36 @@ it('does not persist bodies when redaction is disabled', function () {
     config(['stripe-watcher.redaction.enabled' => true]);
 });
 
+it('does not persist exception details when redaction is disabled', function () {
+    config(['stripe-watcher.redaction.enabled' => false]);
+
+    $webhook = StripeWebhook::create([
+        'exception_message' => 'sk_live_secret-value',
+        'exception_trace' => "#0 Handler->run('sk_live_secret-value')",
+    ]);
+
+    expect($webhook->exception_message)->toBeNull()
+        ->and($webhook->exception_trace)->toBeNull();
+
+    config(['stripe-watcher.redaction.enabled' => true]);
+});
+
+it('omits exception details containing Stripe secret formats', function () {
+    $webhook = StripeWebhook::create([
+        'exception_message' => 'Stripe rejected sk_live_secret-value',
+        'exception_trace' => '#0 Handler->run(whsec_secret-value)',
+    ]);
+
+    expect($webhook->exception_message)->toBeNull()
+        ->and($webhook->exception_trace)->toBeNull();
+});
+
+it('does not persist request URLs', function () {
+    expect(StripeWebhook::create([
+        'request_url' => 'https://example.test/webhook/secret-value',
+    ])->request_url)->toBeNull();
+});
+
 it('stores only a sanitized exception trace summary', function () {
     $webhook = StripeWebhook::create([
         'exception_trace' => "#0 /app/Handler.php(12): Handler->run('secret-value')\n#1 /app/index.php(4): Handler->run()",
@@ -164,4 +194,14 @@ it('uses the package table when rolling back after configuration changes', funct
 
     expect(Schema::hasTable('stripe_watcher_webhooks'))->toBeFalse()
         ->and(Schema::hasTable('custom_webhooks'))->toBeFalse();
+});
+
+it('applies and rolls back the created timestamp index migration', function () {
+    $migration = require __DIR__.'/../../database/migrations/2026_09_20_000002_add_created_at_index_to_stripe_watcher_webhooks_table.php';
+
+    $migration->up();
+    expect(Schema::hasIndex('stripe_watcher_webhooks', 'stripe_watcher_webhooks_created_at_index'))->toBeTrue();
+
+    $migration->down();
+    expect(Schema::hasIndex('stripe_watcher_webhooks', 'stripe_watcher_webhooks_created_at_index'))->toBeFalse();
 });

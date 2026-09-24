@@ -3,22 +3,24 @@
 ## Repository State
 
 - Laravel package: `ivalin-venkov/stripe-watcher`
-- Dashboard route authorization and webhook storage/redaction foundations are implemented.
-- Webhook capture middleware and the dashboard UI remain deferred.
+- Dashboard route authorization, webhook storage/redaction, capture middleware, and dashboard UI are implemented.
+- Retention configuration and the pruning command are implemented.
 - Current base commit: `0d19458 WIP: v1`.
 - The working tree contains uncommitted fixes from the code review; do not discard them.
 - The fixes preserve null JSON attributes, omit failed JSON encodings, omit exception messages containing configured sensitive keys, and make migration rollback deterministic.
 - The package migration always creates and rolls back `stripe_watcher_webhooks`. A custom `storage.table` requires an application-owned migration.
 - Fresh validation passed: `composer test`, `composer lint:check`, and `composer analyse`.
-- Current validation result: 39 Pest tests, 87 assertions, 100% type coverage.
+- Current validation result: 59 Pest tests, 168 assertions, 100% type coverage.
 
 ### Current Working-Tree Changes
 
-- `src/Models/StripeWebhook.php`: fail-closed JSON attribute encoding and exception-message redaction.
-- `src/Support/WebhookRedactor.php`: sensitive exception-message detection.
-- `database/migrations/2026_09_20_000001_create_stripe_watcher_webhooks_table.php`: fixed migration table name.
-- `tests/Feature/WebhookRecordTest.php` and `tests/Unit/WebhookRedactorTest.php`: regression coverage for the review findings.
-- `README.md`: documents custom-table migration behavior.
+- `src/Models/StripeWebhook.php` and `src/Support/WebhookRedactor.php`: fail-closed content sanitization.
+- `src/Support/WebhookRecorder.php` and `src/Http/Middleware/CaptureWebhook.php`: request lifecycle capture and failure isolation.
+- `src/Http/Controllers/DashboardController.php`, `routes/stripe-watcher.php`, and `resources/views/dashboard/`: protected dashboard listing and detail views.
+- `src/Console/Commands/PruneWebhooksCommand.php`: configurable retention pruning.
+- `database/migrations/2026_09_20_000001_create_stripe_watcher_webhooks_table.php` and `2026_09_20_000002_add_created_at_index_to_stripe_watcher_webhooks_table.php`: storage schema and retention index.
+- `tests/Feature/` and `tests/Unit/`: capture, dashboard, retention, migration, and redaction coverage.
+- `README.md` and `resources/boost/skills/stripe-watcher-development/SKILL.md`: consumer integration documentation.
 
 These changes have not been committed yet.
 
@@ -90,19 +92,16 @@ Gate::define('viewStripeWatcher', function (User $user): bool {
 
 Use configurable Laravel `can:` middleware. The default ability is `viewStripeWatcher`, and both the middleware stack and ability name remain configurable.
 
-## Suggested Implementation Phases
+## Implementation Phases
 
-1. Implement the capture middleware and persistence service.
-2. Add dashboard controllers and Blade views.
-3. Add retention/pruning support.
-4. Add feature tests for capture, failures, authorization, and dashboard output.
-5. Document the completed capture flow and dashboard usage.
+1. Implement the capture middleware and persistence service. Completed.
+2. Add dashboard controllers and Blade views. Completed.
+3. Add retention/pruning support. Completed.
+4. Add feature tests for capture, failures, authorization, and dashboard output. Completed.
+5. Document the completed capture flow and dashboard usage. Completed.
 
-## Next Session Checklist
+## Follow-up Checklist
 
-1. Review the uncommitted changes and commit them if they are accepted.
-2. Implement middleware attachment for an existing application-owned Stripe webhook route; do not add a package proxy endpoint.
-3. Add a persistence service that records request metadata before invoking the handler and response/exception data afterward.
-4. Ensure all captured bodies, headers, payloads, and exception details pass through fail-closed sanitization.
-5. Add capture tests for successful responses, handler exceptions, signature status, response data, and duration.
-6. Then begin the dashboard listing/detail UI and retention/pruning work.
+1. Review and commit the accepted working-tree changes.
+2. Run the full Laravel 12/13, PHP, Windows, and prefer-lowest CI matrix.
+3. Add an independent upgrade/rollback test for the retention index migration if migration upgrade coverage is required.

@@ -63,7 +63,11 @@ class WebhookRedactor
 
     public function message(?string $message): ?string
     {
-        if ($message === null) {
+        if ($message === null || ! $this->enabled()) {
+            return null;
+        }
+
+        if ($this->containsSecretFormat($message)) {
             return null;
         }
 
@@ -82,7 +86,11 @@ class WebhookRedactor
 
     public function trace(?string $trace): ?string
     {
-        if ($trace === null) {
+        if ($trace === null || ! $this->enabled()) {
+            return null;
+        }
+
+        if ($this->containsSecretFormat($trace)) {
             return null;
         }
 
@@ -128,6 +136,8 @@ class WebhookRedactor
         foreach ($values as $key => $value) {
             if (in_array(strtolower((string) $key), $sensitiveNames, true)) {
                 $values[$key] = $this->replacement();
+            } elseif (is_string($value) && $this->containsSecretFormat($value)) {
+                $values[$key] = $this->replacement();
             } elseif (is_object($value)) {
                 $values[$key] = $this->replacement();
             } elseif (is_array($value)) {
@@ -163,5 +173,10 @@ class WebhookRedactor
     private function replacement(): string
     {
         return (string) config('stripe-watcher.redaction.replacement', '[REDACTED]');
+    }
+
+    private function containsSecretFormat(string $value): bool
+    {
+        return preg_match('/\b(?:sk|rk)_(?:test|live)_[A-Za-z0-9]+\b|\bwhsec_[A-Za-z0-9]+\b/i', $value) === 1;
     }
 }

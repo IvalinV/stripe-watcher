@@ -68,9 +68,8 @@ configuration file:
 'enabled' => true,
 ```
 
-The dashboard route is protected with Laravel authorization. The dashboard UI
-is still being implemented. Define the configured ability in the application,
-for example:
+The dashboard route is protected with Laravel authorization. Define the
+configured ability in the application, for example:
 
 ```php
 use Illuminate\Support\Facades\Gate;
@@ -84,15 +83,44 @@ The dashboard uses the `web`, `auth`, and `can:viewStripeWatcher` middleware by
 default. These middleware, the route prefix, and the ability name can be
 changed in `config/stripe-watcher.php`.
 
-The package provides a `stripe_watcher_webhooks` table and model for the
-upcoming webhook capture flow. Publish and run the package migration when you
-are ready to enable storage. Request and response headers and JSON payloads
-are redacted at the model boundary before storage. Redaction can be configured
-through the `storage` and `redaction` sections of `config/stripe-watcher.php`.
+The package provides a `stripe_watcher_webhooks` table and model for webhook
+capture. Publish and run the package migration when you are ready to enable
+storage. Attach the capture middleware to the application's existing Stripe
+webhook route; the package does not create a proxy endpoint:
+
+```php
+use StripeWatcher\StripeWatcher\Http\Middleware\CaptureWebhook;
+
+Route::post('/stripe/webhook', WebhookController::class)
+    ->middleware(CaptureWebhook::class);
+```
+
+Request and response headers and JSON payloads are redacted at the model
+boundary before storage. Configure the storage table through `storage.table`
+and sanitization through the `redaction` section of `config/stripe-watcher.php`.
 The package migration always creates and rolls back `stripe_watcher_webhooks`;
 if you configure a custom storage table, create its migration separately.
 Redaction fails closed: disabling it omits bodies, headers, and payloads rather
 than storing them unredacted. Invalid or non-JSON bodies are also omitted.
+
+Request URLs are omitted to avoid persisting secrets embedded in URL paths. If
+signature verification runs before the capture middleware, set the result
+on the request using `capture.signature_attribute` (default:
+`stripe_signature_verified`). Captured records include request metadata,
+response data, exceptions, and processing duration.
+
+Exception messages and traces are omitted when redaction is disabled. Known
+configured sensitive values and common Stripe secret formats are omitted when
+redaction is enabled.
+
+The default retention period is 30 days. Prune old records with:
+
+```bash
+php artisan stripe-watcher:prune
+php artisan stripe-watcher:prune --days=7
+```
+
+Configure the default with `retention.days`.
 
 ## Changelog
 

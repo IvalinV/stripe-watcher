@@ -24,7 +24,30 @@ Use this skill when a Laravel application needs to integrate the Stripe Watcher 
 
 ### 2. Apply the package's public API
 
-Document how to integrate Stripe Watcher here, replacing this placeholder with the integration steps for your package.
+1. Publish and run the migration:
+
+   ```bash
+   php artisan vendor:publish --tag="stripe-watcher-migrations"
+   php artisan migrate
+   ```
+
+2. Attach `StripeWatcher\StripeWatcher\Http\Middleware\CaptureWebhook` to
+   the application's existing Stripe webhook route. Stripe Watcher does not
+   provide a proxy endpoint:
+
+   ```php
+   use StripeWatcher\StripeWatcher\Http\Middleware\CaptureWebhook;
+
+   Route::post('/stripe/webhook', WebhookController::class)
+       ->middleware(CaptureWebhook::class);
+   ```
+
+3. Enable and protect the dashboard in `config/stripe-watcher.php`. Define the
+   configured `authorization_ability` in the application. The dashboard is
+   disabled by default.
+
+4. Run `php artisan stripe-watcher:prune` periodically. The command uses
+   `retention.days` by default or accepts a `--days` override.
 
 ## Rules, References, and Templates
 
@@ -34,8 +57,11 @@ Read before executing:
 
 ## Examples
 
-- describe a representative integration scenario for Stripe Watcher
+- capture an application's Stripe webhook request and inspect it through the
+  protected dashboard
 
 ## Anti-patterns
 
 - do not document package internals here; keep the skill focused on adoption in Laravel apps
+- do not add a package proxy route when the application already owns the Stripe webhook route
+- do not enable the dashboard without configuring its authorization ability

@@ -66,6 +66,11 @@ class StripeWebhook extends Model
         $this->attributes['request_body'] = app(WebhookRedactor::class)->body($value);
     }
 
+    public function setRequestUrlAttribute(?string $value): void
+    {
+        $this->attributes['request_url'] = null;
+    }
+
     public function setResponseBodyAttribute(?string $value): void
     {
         $this->attributes['response_body'] = app(WebhookRedactor::class)->body($value);

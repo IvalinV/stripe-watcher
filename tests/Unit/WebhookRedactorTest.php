@@ -134,3 +134,21 @@ it('preserves exception messages without sensitive values', function () {
     expect(app(WebhookRedactor::class)->message('Invalid event type'))
         ->toBe('Invalid event type');
 });
+
+it('redacts Stripe secret formats under non-sensitive payload keys', function () {
+    expect(app(WebhookRedactor::class)->payload([
+        'note' => 'sk_live_secret-value',
+        'nested' => ['value' => 'whsec_secret-value'],
+    ]))->toBe([
+        'note' => '[REDACTED]',
+        'nested' => ['value' => '[REDACTED]'],
+    ]);
+});
+
+it('redacts Stripe secret formats in headers', function () {
+    expect(app(WebhookRedactor::class)->headers([
+        'X-Diagnostic' => 'rk_test_secret-value',
+    ]))->toBe([
+        'X-Diagnostic' => '[REDACTED]',
+    ]);
+});
