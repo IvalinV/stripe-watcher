@@ -1,5 +1,27 @@
 # Release Notes
 
+## v0.1.1 - 2026-09-24
+
+### Stripe Watcher v0.1.1
+
+#### Enhancements
+
+- Added warnings when webhook signature verification is missing or not boolean.
+- Preserved webhook recording even if logging fails.
+- Added support and documentation for custom signature verification attributes.
+- Improved Composer metadata and Stripe SDK integration guidance.
+- Expanded webhook capture test coverage.
+
+#### Documentation
+
+- Clarified that Stripe Watcher does not verify signatures itself.
+- Documented integration with stripe/stripe-php, Laravel Cashier, or custom verification logic.
+
+#### Verification
+
+- 65 tests passed.
+- PHPStan and Laravel Pint passed.
+
 ## [Unreleased](https://github.com/ivalin-venkov/stripe-watcher/compare/Release v0.1.0...HEAD)
 
 ## [Release v0.1.0](https://github.com/ivalin-venkov/stripe-watcher/compare/v0.1.0...Release v0.1.0) - 2026-09-24
