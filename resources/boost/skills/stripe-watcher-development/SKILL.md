@@ -31,7 +31,17 @@ Use this skill when a Laravel application needs to integrate the Stripe Watcher 
    php artisan migrate
    ```
 
-2. Attach `StripeWatcher\StripeWatcher\Http\Middleware\CaptureWebhook` to
+2. Publish the dashboard assets:
+
+   ```bash
+   php artisan vendor:publish --tag="stripe-watcher-assets"
+   ```
+
+   The dashboard loads its dependency-free responsive stylesheet from
+   `public/vendor/stripe-watcher/stripe-watcher.css`. Customize that published
+   file when the application's visual language requires it.
+
+3. Attach `StripeWatcher\StripeWatcher\Http\Middleware\CaptureWebhook` to
    the application's existing Stripe webhook route. Stripe Watcher does not
    provide a proxy endpoint:
 
@@ -49,11 +59,11 @@ Use this skill when a Laravel application needs to integrate the Stripe Watcher 
    result is present, including when the attribute is missing or non-boolean,
    it logs a warning and continues capturing the webhook.
 
-3. Enable and protect the dashboard in `config/stripe-watcher.php`. Define the
+4. Enable and protect the dashboard in `config/stripe-watcher.php`. Define the
    configured `authorization_ability` in the application. The dashboard is
    disabled by default.
 
-4. Run `php artisan stripe-watcher:prune` periodically. The command uses
+5. Run `php artisan stripe-watcher:prune` periodically. The command uses
    `retention.days` by default or accepts a `--days` override.
 
 ## Rules, References, and Templates

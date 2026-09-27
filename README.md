@@ -65,6 +65,11 @@ php artisan vendor:publish --tag="stripe-watcher-lang"
 php artisan vendor:publish --tag="stripe-watcher-assets"
 ```
 
+The dashboard ships with a dependency-free responsive stylesheet. Publish the
+assets when enabling the dashboard; it is loaded from
+`public/vendor/stripe-watcher/stripe-watcher.css`. You can customize the
+published stylesheet without replacing the package views.
+
 ## Usage
 
 The dashboard is disabled by default. Enable it explicitly in the published

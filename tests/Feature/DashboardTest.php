@@ -35,6 +35,15 @@ it('registers the dashboard route with configured middleware when enabled', func
         ->and($route->middleware())->toBe(['web', 'auth', 'can:inspectStripeEvents']);
 });
 
+it('publishes the dashboard stylesheet as a package asset', function () {
+    $this->artisan('vendor:publish', [
+        '--tag' => 'stripe-watcher-assets',
+        '--force' => true,
+    ])->assertSuccessful();
+
+    expect(public_path('vendor/stripe-watcher/stripe-watcher.css'))->toBeFile();
+});
+
 it('preserves default redaction keys when configuration is partially overridden', function () {
     config(['stripe-watcher.redaction.keys' => ['private_value']]);
 
@@ -62,6 +71,9 @@ it('lists captured webhooks in the protected dashboard', function () {
 
     $this->get('/stripe-watcher')
         ->assertSuccessful()
+        ->assertSee('vendor/stripe-watcher/stripe-watcher.css')
+        ->assertSee('class="dashboard-shell"', false)
+        ->assertSee('class="webhook-card"', false)
         ->assertSee('evt_123')
         ->assertSee('payment_intent.succeeded');
 });
@@ -91,6 +103,9 @@ it('shows a captured webhook detail page', function () {
 
     $this->get('/stripe-watcher/'.$webhook->id)
         ->assertSuccessful()
+        ->assertSee('vendor/stripe-watcher/stripe-watcher.css')
+        ->assertSee('class="detail-grid"', false)
+        ->assertSee('class="code-panel"', false)
         ->assertSee('evt_detail')
         ->assertSee('charge.succeeded')
         ->assertSee('Request URL')

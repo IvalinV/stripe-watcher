@@ -2,6 +2,7 @@
 
 namespace Workbench\App\Providers;
 
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class WorkbenchServiceProvider extends ServiceProvider
@@ -19,6 +20,11 @@ class WorkbenchServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        config([
+            'stripe-watcher.enabled' => true,
+            'stripe-watcher.middleware' => ['web'],
+        ]);
+
+        Gate::define('viewStripeWatcher', fn (): bool => true);
     }
 }
