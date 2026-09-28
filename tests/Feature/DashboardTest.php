@@ -44,6 +44,19 @@ it('publishes the dashboard stylesheet as a package asset', function () {
     expect(public_path('vendor/stripe-watcher/stripe-watcher.css'))->toBeFile();
 });
 
+it('keeps pagination controls contained and sizes their icons', function () {
+    $this->artisan('vendor:publish', [
+        '--tag' => 'stripe-watcher-assets',
+        '--force' => true,
+    ])->assertSuccessful();
+
+    $stylesheet = file_get_contents(public_path('vendor/stripe-watcher/stripe-watcher.css'));
+
+    expect($stylesheet)
+        ->toContain('.pagination nav > div')
+        ->toContain('.pagination nav svg');
+});
+
 it('preserves default redaction keys when configuration is partially overridden', function () {
     config(['stripe-watcher.redaction.keys' => ['private_value']]);
 
