@@ -10,6 +10,10 @@
     <a href="https://packagist.org/packages/ivalin-venkov/stripe-watcher"><img src="https://img.shields.io/packagist/dt/ivalin-venkov/stripe-watcher.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
+<p align="center">
+    <img src="docs/images/stripe_watcher.png" alt="Stripe Watcher dashboard">
+</p>
+
 Package allowing you to inspect the stripe webhooks payload and result
 
 ## Installation
