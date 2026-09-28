@@ -1,5 +1,14 @@
 # Release Notes
 
+## v0.1.2: Dashboard fixes - 2026-09-28
+
+### Changes
+
+#### Release v0.1.2
+
+- Fixed Dashboard styling
+- Fixed Dashboard pagination controls icons
+
 ## v0.1.1 - 2026-09-24
 
 ### Stripe Watcher v0.1.1
