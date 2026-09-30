@@ -6,7 +6,6 @@ use StripeWatcher\StripeWatcher\Models\StripeWebhook;
 
 beforeEach(function () {
     $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
-    $this->artisan('migrate:fresh')->assertSuccessful();
 });
 
 it('prunes webhook records older than the configured retention period', function () {

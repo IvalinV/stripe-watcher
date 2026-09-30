@@ -14,6 +14,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (! Schema::hasTable(self::TABLE) || Schema::hasIndex(self::TABLE, self::INDEX)) {
+            return;
+        }
+
         Schema::table(self::TABLE, function (Blueprint $table): void {
             $table->index('created_at', self::INDEX);
         });
@@ -21,6 +25,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable(self::TABLE) || ! Schema::hasIndex(self::TABLE, self::INDEX)) {
+            return;
+        }
+
         Schema::table(self::TABLE, function (Blueprint $table): void {
             $table->dropIndex(self::INDEX);
         });

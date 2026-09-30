@@ -7,7 +7,6 @@ use StripeWatcher\StripeWatcher\Models\StripeWebhook;
 
 beforeEach(function () {
     $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
-    $this->artisan('migrate:fresh')->assertSuccessful();
 });
 
 it('creates a webhook record with diagnostic data and casts JSON values', function () {
