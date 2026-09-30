@@ -69,7 +69,6 @@ it('preserves default redaction keys when configuration is partially overridden'
 
 it('lists captured webhooks in the protected dashboard', function () {
     $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
-    $this->artisan('migrate:fresh')->assertSuccessful();
     config(['stripe-watcher.enabled' => true, 'stripe-watcher.middleware' => ['web']]);
     Gate::define('viewStripeWatcher', fn (mixed $user = null): bool => true);
     require __DIR__.'/../../routes/stripe-watcher.php';
@@ -93,7 +92,6 @@ it('lists captured webhooks in the protected dashboard', function () {
 
 it('shows a captured webhook detail page', function () {
     $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
-    $this->artisan('migrate:fresh')->assertSuccessful();
     config(['stripe-watcher.enabled' => true, 'stripe-watcher.middleware' => ['web']]);
     Gate::define('viewStripeWatcher', fn (mixed $user = null): bool => true);
     require __DIR__.'/../../routes/stripe-watcher.php';
